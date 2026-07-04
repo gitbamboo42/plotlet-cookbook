@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Generated recipe outputs (WIP — regenerate by running each recipe)
+*.svg
+
+# Personal working notes
+todo*.md
+TODO*.md
+
+# WIP — not ready to publish yet
+circle/data/
+code_anatomy/
+omics_heatmap/
+genomic_tracks/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
