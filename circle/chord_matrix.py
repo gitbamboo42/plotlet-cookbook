@@ -161,7 +161,7 @@ def _build_chord(matrix_df, *, cmap, gap=4, r_inner=0.93,
     return pt.grid([[ring]]).coordinate(
         # gap=0.01 keeps the ring close to the canvas edge (default 0.05
         # leaves ~5% of canvas radius empty as outer margin).
-        pt.CircularCoordinate(r_inner=r_inner, inner=arcs, gap=0.01)
+        pt.CircularCoordinate(r_inner=r_inner, inner=arcs)
     )
 
 

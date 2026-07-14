@@ -56,19 +56,29 @@ def transpose(rows):
     return [list(col) for col in zip(*rows)]
 
 
+def tidy_heatmap(matrix, xlabels, ylabels, xname="x"):
+    """Wide `matrix[y][x]` + axis labels → the tidy table the heatmap now
+    takes: each x label is a table row (→ a heatmap column), each y label
+    is a value column (→ a heatmap row)."""
+    data = {xname: list(xlabels)}
+    for i, yl in enumerate(ylabels):
+        data[yl] = list(matrix[i])
+    return data
+
+
 if __name__ == "__main__":
     matrix, genes, pathways, samples, conditions = make_data()
 
-    row_tree = pt.cluster_split(matrix, split=pathways, labels=genes,
+    row_tree = pt.linkage_split(matrix, split=pathways, labels=genes,
                                 method="ward")
-    col_tree = pt.cluster_split(transpose(matrix), split=conditions,
+    col_tree = pt.linkage_split(transpose(matrix), split=conditions,
                                 labels=samples, method="ward")
 
     cond_palette = {"Control": "C0", "Treated": "C3"}
     path_palette = {"Apoptosis": "C2", "Cell cycle": "C1", "Immune": "C4"}
 
     top_tree = pt.chart(data_height=90)
-    top_tree.dendrogram(tree=col_tree, orient="top", parent=True)
+    top_tree.dendrogram(tree=col_tree, orientation="top", parent=True)
 
     top_strip = pt.chart(data_height=14)
     top_strip.annotation_strip({"sample": samples, "condition": conditions},
@@ -76,12 +86,12 @@ if __name__ == "__main__":
                                palette=cond_palette)
 
     left_tree = pt.chart(data_width=110)
-    left_tree.dendrogram(tree=row_tree, orient="left", parent=True)
+    left_tree.dendrogram(tree=row_tree, orientation="left", parent=True)
 
     left_strip = pt.chart(data_width=14)
     left_strip.annotation_strip({"gene": genes, "pathway": pathways},
                                 position="gene", value="pathway",
-                                palette=path_palette, orient="y")
+                                palette=path_palette, orientation="y")
 
     # Group parallel cluster labels into the {cluster: [members]} shape
     # that c.sectors() expects. divider=False, label=False keeps the
@@ -98,8 +108,8 @@ if __name__ == "__main__":
                   data_width=440, data_height=320)
     hm.sectors(col_clusters, axis="x", divider=False, label=False)
     hm.sectors(row_clusters, axis="y", divider=False, label=False)
-    hm.heatmap(matrix,
-               xticklabels=samples, yticklabels=genes,
+    hm.heatmap(data=tidy_heatmap(matrix, samples, genes, xname="sample"),
+               x="sample", values=genes,
                cmap="RdBu_r", center=0,
                linewidth=0.5,
                legend={"label": "expression"})

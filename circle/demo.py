@@ -66,7 +66,7 @@ c3 = pt.chart(df, xlim=XL, ylim=(0, 10), data_width=W, data_height=H)
 c3.numeric_bar(x="pos", y="mutations", width=4, color="#D9534F", alpha=0.85)
 
 c4 = pt.chart(df, xlim=XL, ylim=(0, 80), data_width=W, data_height=H)
-c4.line(x="pos", y="depth", group="chrom", color="#E0A030", width=1.5)
+c4.line(x="pos", y="depth", group="chrom", color="#E0A030", linewidth=1.5)
 
 arcs = pt.chart(links, xlim=XL, data_width=W, data_height=H)
 arcs.chord_links(x1="src", x2="dst",
@@ -90,7 +90,7 @@ p3.numeric_bar(x="pos", y="mutations", width=4, color="#D9534F", alpha=0.85)
 
 p4 = pt.chart(df, ylabel="depth", xlabel="position (Mb)", xlim=XL, ylim=(0, 80),
               data_width=400, data_height=110)
-p4.line(x="pos", y="depth", group="chrom", color="#E0A030", width=1.5)
+p4.line(x="pos", y="depth", group="chrom", color="#E0A030", linewidth=1.5)
 
 # Top-of-figure links track: attach_above on p1 makes p_arcs a decoration
 # ring sitting above the top data track. Sectors auto-inherit from p1
