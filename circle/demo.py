@@ -3,7 +3,7 @@ intra-chrom links drawn through the inner disc. Plotlet reproduction of the
 kind of circular genome figure pycirclize / Circos produce, built from
 plotlet's `CircularCoordinate` + sectors + chord artists.
 
-The same `c.chord_links(...)` artist works in both the circular inner
+The same `c.add_chord_links(...)` artist works in both the circular inner
 disc (Bezier chords through the center) and the linear strip below the
 tracks (half-ellipse arcs above the axis) — the coordinate decides how
 the curves render.
@@ -14,8 +14,7 @@ import numpy as np
 import pandas as pd
 
 import plotlet as pt
-import plotlet.extensions.numeric_bar   # noqa
-import plotlet.extensions.chord_links   # noqa
+from plotlet import aes
 
 CHROMS  = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7"]
 LENGTHS = [249, 242, 198, 190, 181, 170, 159]  # Mb, real human values
@@ -59,19 +58,23 @@ links = pd.DataFrame(link_rows)
 W = H = 500
 XL = (0, sum(LENGTHS))
 
-c1 = pt.chart(df, xlim=XL, ylim=(0, 30), data_width=W, data_height=H)
-c1.scatter(x="pos", y="gene_density", color="#534AB7", size=2, alpha=0.6)
+c1 = pt.chart(df, aes(x="pos", y="gene_density"),
+              xlim=XL, ylim=(0, 30), data_width=W, data_height=H)
+c1.add_scatter(color="#534AB7", size=2, alpha=0.6)
 
-c3 = pt.chart(df, xlim=XL, ylim=(0, 10), data_width=W, data_height=H)
-c3.numeric_bar(x="pos", y="mutations", width=4, color="#D9534F", alpha=0.85)
+c3 = pt.chart(df, aes(x="pos", y="mutations"),
+              xlim=XL, ylim=(0, 10), data_width=W, data_height=H)
+c3.add_numeric_bar(width=4, color="#D9534F", alpha=0.85)
 
-c4 = pt.chart(df, xlim=XL, ylim=(0, 80), data_width=W, data_height=H)
-c4.line(x="pos", y="depth", group="chrom", color="#E0A030", linewidth=1.5)
+c4 = pt.chart(df, aes(x="pos", y="depth", group="chrom"),
+              xlim=XL, ylim=(0, 80), data_width=W, data_height=H)
+c4.add_line(color="#E0A030", linewidth=1.5)
 
 arcs = pt.chart(links, xlim=XL, data_width=W, data_height=H)
-arcs.chord_links(x1="src", x2="dst",
-                 x1_sector="src_chrom", x2_sector="dst_chrom",
-                 color="kind", width=1.5, alpha=0.75)
+arcs.add_chord_links(aes(x1="src", x2="dst",
+                         x1_sector="src_chrom", x2_sector="dst_chrom",
+                         color="kind"),
+                     width=1.5, alpha=0.75)
 
 circle_panel = (c1 / c3 / c4).coordinate(
     pt.CircularCoordinate(r_inner=0.45, wrap_gap_deg=5, inner=arcs)
@@ -80,17 +83,18 @@ circle_panel = (c1 / c3 / c4).coordinate(
 
 # ---- linear comparison ----
 
-p1 = pt.chart(df, ylabel="genes/bin", xlim=XL, ylim=(0, 30),
-              data_width=400, data_height=110)
-p1.scatter(x="pos", y="gene_density", color="#534AB7", size=3, alpha=0.6)
+p1 = pt.chart(df, aes(x="pos", y="gene_density"), ylabel="genes/bin",
+              xlim=XL, ylim=(0, 30), data_width=400, data_height=110)
+p1.add_scatter(color="#534AB7", size=3, alpha=0.6)
 
-p3 = pt.chart(df, ylabel="mutations", xlim=XL, ylim=(0, 10),
-              data_width=400, data_height=110)
-p3.numeric_bar(x="pos", y="mutations", width=4, color="#D9534F", alpha=0.85)
+p3 = pt.chart(df, aes(x="pos", y="mutations"), ylabel="mutations",
+              xlim=XL, ylim=(0, 10), data_width=400, data_height=110)
+p3.add_numeric_bar(width=4, color="#D9534F", alpha=0.85)
 
-p4 = pt.chart(df, ylabel="depth", xlabel="position (Mb)", xlim=XL, ylim=(0, 80),
+p4 = pt.chart(df, aes(x="pos", y="depth", group="chrom"), ylabel="depth",
+              xlabel="position (Mb)", xlim=XL, ylim=(0, 80),
               data_width=400, data_height=110)
-p4.line(x="pos", y="depth", group="chrom", color="#E0A030", linewidth=1.5)
+p4.add_line(color="#E0A030", linewidth=1.5)
 
 # Top-of-figure links track: attach_above on p1 makes p_arcs a decoration
 # ring sitting above the top data track. Sectors auto-inherit from p1
@@ -99,9 +103,10 @@ p4.line(x="pos", y="depth", group="chrom", color="#E0A030", linewidth=1.5)
 # second `p_arcs.sectors(...)` call.
 p_arcs = pt.chart(links, ylabel="links", xlim=XL,
                   data_width=400, data_height=80)
-p_arcs.chord_links(x1="src", x2="dst",
-                   x1_sector="src_chrom", x2_sector="dst_chrom",
-                   color="kind", width=1.5, alpha=0.75)
+p_arcs.add_chord_links(aes(x1="src", x2="dst",
+                           x1_sector="src_chrom", x2_sector="dst_chrom",
+                           color="kind"),
+                       width=1.5, alpha=0.75)
 p_arcs.yticks([])
 p1.attach_above(p_arcs)
 

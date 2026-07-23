@@ -11,7 +11,7 @@ from pathlib import Path
 import random
 
 import plotlet as pt
-import plotlet.extensions.annotation_strip  # noqa: F401
+from plotlet import aes
 
 
 def make_data(seed=0):
@@ -58,12 +58,13 @@ if __name__ == "__main__":
 
     path_palette = {"Apoptosis": "C2", "Cell cycle": "C1", "Immune": "C4"}
 
+    path_strip = {"gene": genes, "pathway": pathways}
+
     left_tree = pt.chart(data_width=80)
-    left_tree.dendrogram(tree=row_tree, orientation="left", parent=True)
-    left_strip = pt.chart(data_width=14)
-    left_strip.annotation_strip({"gene": genes, "pathway": pathways},
-                                position="gene", value="pathway",
-                                palette=path_palette, orientation="y")
+    left_tree.add_dendrogram(tree=row_tree, orientation="left", parent=True)
+    left_strip = pt.chart(path_strip, aes(position="gene", value="pathway"),
+                          data_width=14)
+    left_strip.add_annotation_strip(palette=path_palette, orientation="y")
 
     # Group parallel pathway labels into the {cluster: [members]} shape
     # that c.sectors() expects. Only the anchor declares sectors;
@@ -72,27 +73,29 @@ if __name__ == "__main__":
     for g, p in zip(genes, pathways):
         row_clusters.setdefault(p, []).append(g)
 
+    ctrl_data = tidy_heatmap(ctrl_m, ctrl_s, genes, xname="sample")
+    trt_data = tidy_heatmap(trt_m, trt_s, genes, xname="sample")
+
     left = pt.chart(title="Control", data_width=180, data_height=320)
     left.sectors(row_clusters, axis="y", divider=False, label=False)
-    left.heatmap(data=tidy_heatmap(ctrl_m, ctrl_s, genes, xname="sample"),
-                 x="sample", values=genes,
-                 cmap="RdBu_r", center=0, vmin=-3, vmax=3,
-                 linewidth=0.5,
-                 legend={"label": "expression"})
+    left.add_heatmap(data=ctrl_data, mapping=aes(x="sample"), values=genes,
+                     cmap="RdBu_r", center=0, vmin=-3, vmax=3,
+                     linewidth=0.5,
+                     legend={"label": "expression"})
     left.attach_left(left_strip, left_tree)
 
     right = pt.chart(title="Treated", data_width=180, data_height=320)
-    right.heatmap(data=tidy_heatmap(trt_m, trt_s, genes, xname="sample"),
-                  x="sample", values=genes,
-                  cmap="RdBu_r", center=0, vmin=-3, vmax=3,
-                  linewidth=0.5,
-                  legend=False)
+    right.add_heatmap(data=trt_data, mapping=aes(x="sample"), values=genes,
+                      cmap="RdBu_r", center=0, vmin=-3, vmax=3,
+                      linewidth=0.5,
+                      legend=False)
 
     # annotation_strip with text= draws glyphs, so share_y's tick-label
     # suppression doesn't eat gene names on the seam.
-    right_labels = pt.chart(data_width=70)
-    right_labels.annotation_strip({"gene": genes}, position="gene", value="gene",
-                                  text=True, orientation="y", side="left")
+    label_strip = {"gene": genes}
+    right_labels = pt.chart(label_strip, aes(position="gene", value="gene"),
+                            data_width=70)
+    right_labels.add_annotation_strip(text=True, orientation="y", side="left")
     right.attach_right(right_labels)
 
     fig = (left | right | pt.legend(

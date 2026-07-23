@@ -17,8 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 import plotlet as pt
-import plotlet.extensions.chord_ribbon       # noqa
-import plotlet.extensions.annotation_strip   # noqa
+from plotlet import aes
 
 
 def _palette(cmap_name: str, n: int) -> list[str]:
@@ -114,10 +113,10 @@ def _build_chord(matrix_df, *, cmap, gap=4, r_inner=0.93,
     arcs.sectors(sectors_spec, column="src", label=False)
 
     if alpha_handler is None:
-        arcs.chord_ribbon(
-            x1_start="x1a", x1_end="x1b", x2_start="x2a", x2_end="x2b",
-            x1_sector="src", x2_sector="dst",
-            color="src", palette=palette,
+        arcs.add_chord_ribbon(
+            aes(x1_start="x1a", x1_end="x1b", x2_start="x2a", x2_end="x2b",
+                x1_sector="src", x2_sector="dst", color="src"),
+            palette=palette,
             alpha=alpha, edge_color=edge_color, edge_width=edge_width,
         )
     else:
@@ -128,12 +127,12 @@ def _build_chord(matrix_df, *, cmap, gap=4, r_inner=0.93,
                             for r, d in zip(ribbons["src"], ribbons["dst"])]
         for a in sorted(ribbons["alpha"].unique()):
             sub = ribbons[ribbons["alpha"] == a].reset_index(drop=True)
-            arcs.chord_ribbon(
-                data=sub,
-                x1_start="x1a", x1_end="x1b",
-                x2_start="x2a", x2_end="x2b",
-                x1_sector="src", x2_sector="dst",
-                color="src", palette=palette,
+            arcs.add_chord_ribbon(
+                sub,
+                aes(x1_start="x1a", x1_end="x1b",
+                    x2_start="x2a", x2_end="x2b",
+                    x1_sector="src", x2_sector="dst", color="src"),
+                palette=palette,
                 alpha=float(a),
                 edge_color=edge_color, edge_width=edge_width,
             )
@@ -155,9 +154,9 @@ def _build_chord(matrix_df, *, cmap, gap=4, r_inner=0.93,
     ring = pt.chart(strip_df, xlim=XL, ylim=(0, 1),
                     data_width=size, data_height=size)
     ring.sectors(sectors_spec, column="name", label=False)
-    ring.annotation_strip(x1="start", x2="end", value="name",
-                          palette=palette, text=True,
-                          text_color="white", fontsize=label_fontsize)
+    ring.add_annotation_strip(aes(x1="start", x2="end", value="name"),
+                              palette=palette, text=True,
+                              text_color="white", fontsize=label_fontsize)
     return pt.grid([[ring]]).coordinate(
         # gap=0.01 keeps the ring close to the canvas edge (default 0.05
         # leaves ~5% of canvas radius empty as outer margin).
@@ -191,17 +190,17 @@ def _build_linear(matrix_df, *, cmap, gap=4, width=900, ribbon_h=140,
 
     p_strip = pt.chart(strip_df, xlim=XL, data_width=width, data_height=strip_h)
     p_strip.sectors(sectors_spec, column="name", label=False)
-    p_strip.annotation_strip(x1="start", x2="end", value="name",
-                             palette=palette, text=True,
-                             text_color="white", fontsize=label_fontsize)
+    p_strip.add_annotation_strip(aes(x1="start", x2="end", value="name"),
+                                 palette=palette, text=True,
+                                 text_color="white", fontsize=label_fontsize)
 
     p_arc = pt.chart(ribbons, xlim=XL, data_width=width, data_height=ribbon_h)
     p_arc.sectors(sectors_spec, column="src", label=False)
     if alpha_handler is None:
-        p_arc.chord_ribbon(
-            x1_start="x1a", x1_end="x1b", x2_start="x2a", x2_end="x2b",
-            x1_sector="src", x2_sector="dst",
-            color="src", palette=palette,
+        p_arc.add_chord_ribbon(
+            aes(x1_start="x1a", x1_end="x1b", x2_start="x2a", x2_end="x2b",
+                x1_sector="src", x2_sector="dst", color="src"),
+            palette=palette,
             alpha=alpha, edge_color=edge_color, edge_width=edge_width,
         )
     else:
@@ -209,12 +208,12 @@ def _build_linear(matrix_df, *, cmap, gap=4, width=900, ribbon_h=140,
                             for r, d in zip(ribbons["src"], ribbons["dst"])]
         for a in sorted(ribbons["alpha"].unique()):
             sub = ribbons[ribbons["alpha"] == a].reset_index(drop=True)
-            p_arc.chord_ribbon(
-                data=sub,
-                x1_start="x1a", x1_end="x1b",
-                x2_start="x2a", x2_end="x2b",
-                x1_sector="src", x2_sector="dst",
-                color="src", palette=palette,
+            p_arc.add_chord_ribbon(
+                sub,
+                aes(x1_start="x1a", x1_end="x1b",
+                    x2_start="x2a", x2_end="x2b",
+                    x1_sector="src", x2_sector="dst", color="src"),
+                palette=palette,
                 alpha=float(a),
                 edge_color=edge_color, edge_width=edge_width,
             )

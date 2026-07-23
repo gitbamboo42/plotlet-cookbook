@@ -5,8 +5,8 @@ heatmap layouts, genome browser tracks, and similar substantial recipes
 that compose custom artists with [plotlet](https://github.com/gitbamboo42/plotlet)'s
 layout algebra.
 
-Requirements: `pip install plotlet`. (These recipes use only core plotlet plus
-a few extensions that ship with it — no separate install needed.)
+Requirements: `pip install plotlet`. (These recipes use only core plotlet —
+no separate install needed.)
 
 The cookbook is intentionally small. Each recipe earns its directory by
 needing ancillary material (sample data, baselines, helper logic) and

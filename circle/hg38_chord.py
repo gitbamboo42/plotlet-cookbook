@@ -19,8 +19,7 @@ from pathlib import Path
 import pandas as pd
 
 import plotlet as pt
-import plotlet.extensions.chord_links        # noqa
-import plotlet.extensions.annotation_strip   # noqa
+from plotlet import aes
 
 DATA = Path(__file__).parent / "data"
 
@@ -89,16 +88,16 @@ cytobands = cytobands[cytobands["chrom"].isin(CHROMS)].reset_index(drop=True)
 arcs = pt.chart(links, xlim=XL, data_width=W, data_height=H)
 arcs.sectors(pt.Sectors(names=CHROMS, lengths=LENGTHS, gap=GAP_PX),
              column="src_chrom", label=False)
-arcs.chord_links(x1="src", x2="dst",
-                 x1_sector="src_chrom", x2_sector="dst_chrom",
-                 color="src_chrom", palette=CHROM_COLORS,
-                 width=1.0, alpha=0.5)
+arcs.add_chord_links(aes(x1="src", x2="dst",
+                         x1_sector="src_chrom", x2_sector="dst_chrom",
+                         color="src_chrom"),
+                     palette=CHROM_COLORS, width=1.0, alpha=0.5)
 
 ring = pt.chart(cytobands, xlim=XL, ylim=(0, 1), data_width=W, data_height=H)
 ring.sectors(pt.Sectors(names=CHROMS, lengths=LENGTHS, gap=GAP_PX, fontsize=11),
              column="chrom")
-ring.annotation_strip(x1="start", x2="end",
-                      value="stain", palette=CYTOBAND_COLORS)
+ring.add_annotation_strip(aes(x1="start", x2="end", value="stain"),
+                          palette=CYTOBAND_COLORS)
 
 # Per-chrom ticks every 40 Mb, matching pycirclize's
 # `xticks_by_interval(40000000, label_formatter=...)`. Positions are
@@ -133,17 +132,17 @@ sectors_spec = pt.Sectors(names=CHROMS, lengths=LENGTHS, gap=8, fontsize=11, rot
 p_cyto = pt.chart(cytobands, xlim=XL,
                   data_width=LW, data_height=LH_CYTO)
 p_cyto.sectors(sectors_spec, column="chrom")
-p_cyto.annotation_strip(x1="start", x2="end",
-                        value="stain", palette=CYTOBAND_COLORS)
+p_cyto.add_annotation_strip(aes(x1="start", x2="end", value="stain"),
+                            palette=CYTOBAND_COLORS)
 p_cyto.xticks(tick_pos, tick_lbl, fontsize=7, rotation=90)
 
 p_arc = pt.chart(links, xlim=XL,
                  data_width=LW, data_height=LH_ARC)
 p_arc.sectors(sectors_spec, column="src_chrom")
-p_arc.chord_links(x1="src", x2="dst",
-                  x1_sector="src_chrom", x2_sector="dst_chrom",
-                  color="src_chrom", palette=CHROM_COLORS,
-                  width=1.0, alpha=0.5)
+p_arc.add_chord_links(aes(x1="src", x2="dst",
+                          x1_sector="src_chrom", x2_sector="dst_chrom",
+                          color="src_chrom"),
+                      palette=CHROM_COLORS, width=1.0, alpha=0.5)
 
 # `attach_above` with `gap=0` glues p_arc flush against p_cyto (same
 # idiom as a dendrogram sitting on top of a heatmap).

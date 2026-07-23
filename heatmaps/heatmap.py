@@ -13,7 +13,7 @@ from pathlib import Path
 import random
 
 import plotlet as pt
-import plotlet.extensions.annotation_strip  # registers c.annotation_strip
+from plotlet import aes
 
 
 def make_data(seed=0):
@@ -77,21 +77,22 @@ if __name__ == "__main__":
     cond_palette = {"Control": "C0", "Treated": "C3"}
     path_palette = {"Apoptosis": "C2", "Cell cycle": "C1", "Immune": "C4"}
 
-    top_tree = pt.chart(data_height=90)
-    top_tree.dendrogram(tree=col_tree, orientation="top", parent=True)
+    cond_strip = {"sample": samples, "condition": conditions}
+    path_strip = {"gene": genes, "pathway": pathways}
 
-    top_strip = pt.chart(data_height=14)
-    top_strip.annotation_strip({"sample": samples, "condition": conditions},
-                               position="sample", value="condition",
-                               palette=cond_palette)
+    top_tree = pt.chart(data_height=90)
+    top_tree.add_dendrogram(tree=col_tree, orientation="top", parent=True)
+
+    top_strip = pt.chart(cond_strip, aes(position="sample", value="condition"),
+                         data_height=14)
+    top_strip.add_annotation_strip(palette=cond_palette)
 
     left_tree = pt.chart(data_width=110)
-    left_tree.dendrogram(tree=row_tree, orientation="left", parent=True)
+    left_tree.add_dendrogram(tree=row_tree, orientation="left", parent=True)
 
-    left_strip = pt.chart(data_width=14)
-    left_strip.annotation_strip({"gene": genes, "pathway": pathways},
-                                position="gene", value="pathway",
-                                palette=path_palette, orientation="y")
+    left_strip = pt.chart(path_strip, aes(position="gene", value="pathway"),
+                          data_width=14)
+    left_strip.add_annotation_strip(palette=path_palette, orientation="y")
 
     # Group parallel cluster labels into the {cluster: [members]} shape
     # that c.sectors() expects. divider=False, label=False keeps the
@@ -104,15 +105,16 @@ if __name__ == "__main__":
     for g, p in zip(genes, pathways):
         row_clusters.setdefault(p, []).append(g)
 
+    hm_data = tidy_heatmap(matrix, samples, genes, xname="sample")
+
     hm = pt.chart(title="Gene expression: treatment effect by pathway",
                   data_width=440, data_height=320)
     hm.sectors(col_clusters, axis="x", divider=False, label=False)
     hm.sectors(row_clusters, axis="y", divider=False, label=False)
-    hm.heatmap(data=tidy_heatmap(matrix, samples, genes, xname="sample"),
-               x="sample", values=genes,
-               cmap="RdBu_r", center=0,
-               linewidth=0.5,
-               legend={"label": "expression"})
+    hm.add_heatmap(data=hm_data, mapping=aes(x="sample"), values=genes,
+                   cmap="RdBu_r", center=0,
+                   linewidth=0.5,
+                   legend={"label": "expression"})
 
     hm.attach_above(top_strip, top_tree)
     hm.attach_left(left_strip, left_tree)
